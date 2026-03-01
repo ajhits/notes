@@ -1,27 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chat Notes</title>
+
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #ece5dd;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #111;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
 }
 
-header {
+/* Phone Frame */
+.app {
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    max-height: 800px;
+    background: #ece5dd;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Header */
+.header {
     background: #075e54;
     color: white;
     padding: 15px;
     text-align: center;
     font-weight: bold;
+    font-size: 18px;
 }
 
-#chat {
+/* Chat Area */
+.chat {
     flex: 1;
     overflow-y: auto;
     padding: 15px;
@@ -29,58 +51,92 @@ header {
     flex-direction: column;
 }
 
+/* Message Bubble */
 .message {
-    max-width: 70%;
-    padding: 10px 15px;
+    max-width: 75%;
+    padding: 10px 14px;
     margin-bottom: 10px;
-    border-radius: 15px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    animation: fadeIn 0.2s ease-in-out;
     word-wrap: break-word;
 }
 
 .sent {
     align-self: flex-end;
     background: #dcf8c6;
+    border-bottom-right-radius: 4px;
 }
 
 .received {
     align-self: flex-start;
     background: white;
+    border-bottom-left-radius: 4px;
 }
 
-#inputArea {
+/* Input Area */
+.input-area {
     display: flex;
     padding: 10px;
     background: #f0f0f0;
+    border-top: 1px solid #ddd;
 }
 
-#noteInput {
+.input-area input {
     flex: 1;
-    padding: 10px;
-    border-radius: 20px;
+    padding: 12px;
+    border-radius: 25px;
     border: 1px solid #ccc;
     outline: none;
+    font-size: 14px;
 }
 
-button {
-    margin-left: 10px;
-    padding: 10px 15px;
+.input-area button {
+    margin-left: 8px;
+    padding: 0 18px;
+    border-radius: 25px;
     border: none;
-    border-radius: 20px;
     background: #075e54;
     color: white;
+    font-size: 14px;
     cursor: pointer;
+}
+
+/* Scrollbar (mobile friendly) */
+.chat::-webkit-scrollbar {
+    width: 5px;
+}
+.chat::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .app {
+        height: 100vh;
+        max-height: none;
+        border-radius: 0;
+    }
 }
 </style>
 </head>
 <body>
 
-<header>Chat Notes</header>
-
-<div id="chat"></div>
-
-<div id="inputArea">
-    <input type="text" id="noteInput" placeholder="Type a message...">
-    <button onclick="addMessage()">Send</button>
+<div class="app">
+    <div class="header">Chat Notes</div>
+    <div id="chat" class="chat"></div>
+    <div class="input-area">
+        <input type="text" id="noteInput" placeholder="Type a message...">
+        <button onclick="addMessage()">Send</button>
+    </div>
 </div>
 
 <script>
@@ -102,7 +158,7 @@ async function saveMessages(messages) {
             "Content-Type": "application/json",
             "X-Master-Key": API_KEY
         },
-        body: JSON.stringify({ messages: messages })
+        body: JSON.stringify({ messages })
     });
 }
 
@@ -128,16 +184,21 @@ async function addMessage() {
     let messages = await getMessages();
 
     if (messages.length >= 5) {
-        messages.shift(); // remove oldest
+        messages.shift();
     }
 
     messages.push(text);
 
     await saveMessages(messages);
     renderMessages(messages);
-
     input.value = "";
 }
+
+document.getElementById("noteInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        addMessage();
+    }
+});
 
 async function init() {
     const messages = await getMessages();
