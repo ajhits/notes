@@ -1,169 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Notes</title>
-
-<style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #0f0f0f;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-/* App Container */
-.app {
-    width: 100%;
-    max-width: 420px;
-    height: 100vh;
-    max-height: 800px;
-    background: #1e1e1e;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-/* Header */
-.header {
-    background: #121212;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 18px;
-    position: relative;
-    border-bottom: 1px solid #2c2c2c;
-}
-
-/* Delete Button */
-.delete-btn {
-    position: absolute;
-    right: 15px;
-    top: 12px;
-    background: transparent;
-    border: none;
-    color: #ff4d4d;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-/* Chat Area */
-.chat {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Messages */
-.message {
-    max-width: 75%;
-    padding: 10px 14px;
-    margin-bottom: 10px;
-    border-radius: 18px;
-    font-size: 14px;
-    line-height: 1.4;
-    word-wrap: break-word;
-    animation: fadeIn 0.2s ease-in-out;
-}
-
-.sent {
-    align-self: flex-end;
-    background: #005c4b;
-    color: white;
-    border-bottom-right-radius: 4px;
-}
-
-.received {
-    align-self: flex-start;
-    background: #2a2a2a;
-    color: white;
-    border-bottom-left-radius: 4px;
-}
-
-/* Input Area */
-.input-area {
-    display: flex;
-    padding: 10px;
-    background: #121212;
-    border-top: 1px solid #2c2c2c;
-}
-
-.input-area input {
-    flex: 1;
-    padding: 12px;
-    border-radius: 25px;
-    border: 1px solid #333;
-    outline: none;
-    font-size: 14px;
-    background: #1e1e1e;
-    color: white;
-}
-
-.input-area button {
-    margin-left: 8px;
-    padding: 0 18px;
-    border-radius: 25px;
-    border: none;
-    background: #00a884;
-    color: white;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-/* Scrollbar */
-.chat::-webkit-scrollbar {
-    width: 5px;
-}
-.chat::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 10px;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 480px) {
-    .app {
-        height: 100vh;
-        max-height: none;
-    }
-}
-</style>
-</head>
-<body>
-
-<div class="app">
-    <div class="header">
-        Dark Chat Notes
-        <button class="delete-btn" onclick="clearMessages()">🗑</button>
-    </div>
-
-    <div id="chat" class="chat"></div>
-
-    <div class="input-area">
-        <input type="text" id="noteInput" placeholder="Type a message...">
-        <button onclick="addMessage()">Send</button>
-    </div>
-</div>
-
 <script>
 const BIN_ID = "69a44c9c43b1c97be9a96b73";
 const API_KEY = "$2a$10$YRjBGkyNTAV29L5US5KyluFaroMHSH1X0h1KP/2uBewIrkjRvzYBS";
-
-let lastMessagesJSON = "";
 
 // Fetch messages
 async function getMessages() {
@@ -216,41 +53,27 @@ async function addMessage() {
     messages.push(text);
 
     await saveMessages(messages);
+    renderMessages(messages);
     input.value = "";
-    checkForUpdates();
 }
 
 // Clear all messages
 async function clearMessages() {
     if (!confirm("Delete all messages?")) return;
     await saveMessages([]);
-    checkForUpdates();
+    renderMessages([]);
 }
 
-// Auto update check
-async function checkForUpdates() {
-    const messages = await getMessages();
-    const currentJSON = JSON.stringify(messages);
-
-    if (currentJSON !== lastMessagesJSON) {
-        lastMessagesJSON = currentJSON;
-        renderMessages(messages);
-    }
-}
-
+// Enter key support
 document.getElementById("noteInput").addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
         addMessage();
     }
 });
 
-// Auto refresh every 3 seconds
-setInterval(checkForUpdates, 3000);
-
-// Initial load
-checkForUpdates();
+// Initial load (only once)
+window.onload = async function() {
+    const messages = await getMessages();
+    renderMessages(messages);
+};
 </script>
-
-</body>
-</html>
-
